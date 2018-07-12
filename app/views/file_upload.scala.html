@@ -44,18 +44,18 @@
 
         <p id="sub-header">@Html(Messages("file.upload.page.sub-header"))</p>
 
-        <!-- div is closed early due to styling restrictions -->
-        @if(error==""){
-        <div id="file-upload" class="form-group">
-        }else{
-        <div id="file-upload-with-error" class="form-group form-field--error">
-        }
-            <form
-                id ="upload-form"
-                action="@fileUploadUrl"
-                enctype="multipart/form-data"
-                method="post"
-                onsubmit="return checkFileType(this)">
+        <form
+            id ="upload-form"
+            action="@fileUploadUrl"
+            enctype="multipart/form-data"
+            method="post"
+            onsubmit="return checkFileType(this)">
+
+            @if(error==""){
+            <div id="file-upload" class="form-group">
+            }else{
+            <div id="file-upload-with-error" class="form-group form-field--error">
+            }
 
                 <label for="choose-file" id="upload-label">
                     <span class="form-label visually-hidden">Upload a file</span>
@@ -64,10 +64,11 @@
 
                 <input id="choose-file" name="file" type="file" size="40" data-journey-click="button - click:Upload a file:Choose file"/>
 
-                <p class="ras-bottom-margin ras-top-margin"><a href="http://www.gov.uk/guidance/find-the-relief-at-source-residency-statuses-of-multiple-members" id="upload-help-link" data-journey-click="link - click:Upload a file:Get help formatting your file">@Messages("get.help.uploading.link")</a></p>
-                <button class="button" type="submit" id="continue" data-journey-click="button - click:Upload a file:Continue">@Messages("continue")</button>
-            </form>
-        </div>
+            </div>
+
+            <p class="ras-bottom-margin ras-top-margin"><a href="http://www.gov.uk/guidance/find-the-relief-at-source-residency-statuses-of-multiple-members" id="upload-help-link" data-journey-click="link - click:Upload a file:Get help formatting your file">@Messages("get.help.uploading.link")</a></p>
+            <button class="button" type="submit" id="continue" data-journey-click="button - click:Upload a file:Continue">@Messages("continue")</button>
+        </form>
     </div>
 </div>
 
