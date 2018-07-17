@@ -70,22 +70,6 @@ function showError(message){
     ga("send", "event", "There is a problem - view", "Upload a file", message);
 }
 
-$('#choose-file').on('change', function() {
-    if (typeof(window.FileReader)!="undefined") {
-        var file = this.files[0];
-        var reader = new FileReader();
-        reader.onload = function(ev) {
-            var pattern = /"/;
-            var res = pattern.test(ev.target.result);
-            if (res)
-                reportError('CSV cannot contain quotation marks');
-            else
-                cleanError();
-        };
-        reader.readAsText(file);
-    }
-});
-
 $(function() {
     var errors = $('#errors');
     if(errors.length > 0 && errors.css('display') !== 'none') {

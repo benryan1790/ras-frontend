@@ -35,7 +35,7 @@
                           case _ => { error.key + "_label"}
                       }
                   ) { anchor =>
-                    <li role="tooltip" data-journey='There is a problem - view:@gaActionPage:@error.message'>
+                    <li data-journey='There is a problem - view:@gaActionPage:@error.message'>
 
                         @if(anchor.toString.contains("userChoice")){
                         <a href="#@anchor" class="error-list" data-focuses="@error.key-single-lookup">

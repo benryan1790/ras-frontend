@@ -88,8 +88,8 @@ ur.banner.text = Get involved in making government services better (opens in a n
 ur.banner.dismiss.text = No thanks
 
 ##### OTHER ######################################################################################
-upload.result.member.contact = member must contact HMRC
-upload.result.what.next = If no residency status is shown, and you have checked that everything is correct, the {0} to update their personal details.
+upload.result.member.contact = the member must contact HMRC to update their personal details
+upload.result.what.next = If no residency status is shown, and you have checked that everything is correct, {0}.
 continue = Continue
 member = member
 single.lookup.link = Single look up
@@ -175,6 +175,7 @@ unauthorised.list.last = register as an administrator or practitioner
 label.youre_signed_out=You’re signed out
 label.explore_gov_uk=Explore GOV.UK
 label.satisfaction_survey=Satisfaction survey
+label.feedback.use = We use your feedback to make our services better.
 label.how_easy_was_the_service_to_use=How easy was the service to use?
 label.very_easy=Very easy
 label.easy=Easy

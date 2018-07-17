@@ -31,13 +31,12 @@
 
             @views.html.helpers.errorSummary(memberNinoForm, "What is their NINO?")
 
+            <header class="page-header">
+                <h1 id="header" class="heading-xlarge">@Messages("member.nino.page.header", name)</h1>
+            </header>
+
             @form(action = routes.MemberNinoController.post(edit)) {
 
-                <legend>
-                    <header class="page-header">
-                        <h1 id="header" class="heading-xlarge">@Messages("member.nino.page.header", name)</h1>
-                    </header>
-                </legend>
                 <div class="form-group">
 
                     @rasInput(memberNinoForm("nino"),

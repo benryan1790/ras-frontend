@@ -27,7 +27,9 @@
 
             <h1 class="heading-xlarge" id="heading">@Messages("label.youre_signed_out")</h1>
 
-            <h2 class="heading-medium ras-bottom-margin-big" id="satisfaction-survey-heading">@Messages("label.satisfaction_survey")</h2>
+            <h2 class="heading-medium" id="satisfaction-survey-heading">@Messages("label.satisfaction_survey")</h2>
+
+            <p class="ras-bottom-margin-big">@Messages("label.feedback.use")</p>
 
             @helpers.form(action = controllers.routes.QuestionnaireController.submitQuestionnaire, 'class -> "satisfactionSurveyForm") {
 
