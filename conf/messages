@@ -43,13 +43,14 @@ problem.getting.results.header = There has been a problem getting the results
 
 ###### SUB-HEADERS #################################################################################
 
-match.found.what.happens.next = What to do next
+match.found.what.happens.next = What you must do next
 match.found.top = Use this residency status for the whole tax year in your relief at source claims. You cannot change the residency status in your claims during the tax year.
 match.found.bottom.current-year-and-next-year = You must use the {0} to {1} tax year residency status to claim relief at source for {3} from 6 April {2}.
-match.found.bottom.current-year.bottom = You should use this service from January to get {0}’s residency status for the {1} to {2} tax year.
+match.found.bottom.current-year.bottom = From January 2019 use this service to get {0}’s residency status for the {1} to {2} tax year.
 file.upload.page.sub-header = The file must be in CSV format. It cannot be more than 2MB in size.
-upload.success.first-description = It can take up to 24 hours to get the residency status results for all of the members. You will not be able to upload another file during this time.
-upload.success.second-description = You need to come back to this service to get the results. The results will be available on the uploaded file for 3 calendar days before being deleted.
+upload.success.first-description = Files less than 1MB should be ready in a few minutes. Larger files take longer. If the service is busy it can take up to 24 hours.
+upload.success.second-description = You cannot upload another file while this one is processing.
+upload.success.third-description = The results will be available on the service for 3 calendar days before being deleted.
 match.not.found.subheader = You should check with {0} to make sure you have their correct details.
 no.results.available.sub-header = You need to {0} before you can get any results.
 results.not.available.yet.sub-header1 = The results are still being added to the file you uploaded.
@@ -142,14 +143,15 @@ member.details.not.found = {0}’s residency status cannot be displayed
 try.again = Try again
 residency.status = Residency status
 tax.year = Tax year
-tax.year.period = {0} to {1}
+tax.year.period = For the {0} to {1} tax year use
 change = Change
 change.name = Change name
 change.nino = Change National Insurance number
 change.dob = Change date of birth
 match.not.found.what.to.do = If you have checked and everything is correct, {0}.
 contact.hmrc = {0} must contact HMRC to update their personal details
-get.help.uploading.link = Get help formatting your file.
+look.up.another.member = Look up another member
+get.help.uploading.link = Get help formatting your file
 upload = Upload
 file.upload.empty.file.reason=Envelope does not allow zero length files, and submitted file has length 0
 no.results.available.link = upload a file

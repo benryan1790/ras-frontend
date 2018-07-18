@@ -27,50 +27,36 @@
 
     <div class="grid-row">
         <div class="column-two-thirds">
-
-            <h1 id="header" class="heading-xlarge">@Messages("match.found.header",name)</h1>
-
-            <table class ="spacelarge">
-                <thead>
-                <tr>
-                    <th id="tax-year-header">@Messages("tax.year")</th>
-                    <th id="location-header">@Messages("residency.status")</th>
-                </tr>
-                </thead>
-                <tbody>
-
-                <tr>
-                    <td id="cy-tax-year-period">@Messages("tax.year.period", currentTaxYear.toString, (currentTaxYear + 1).toString)</td>
-                    <td id="cy-residency-status">@Messages(currentYearResidencyStatus)</td>
-                </tr>
-
-                @if(nextYearResidencyStatus.nonEmpty) {
-                <tr>
-                    <td id="ny-tax-year-period">@Messages("tax.year.period", (currentTaxYear + 1).toString, (currentTaxYear + 2).toString)</td>
-                    <td id="ny-residency-status">@Messages(nextYearResidencyStatus.get)</td>
-                </tr>
-                }
-
-                </tbody>
-            </table>
-
-            <p id="top-content">@Messages("match.found.top")</p>
+            <div class="govuk-box-highlight">
+                <h1 class="heading-large">@Messages("match.found.header",name)</h1>
+                    <p role="text">@Messages("tax.year.period", currentTaxYear.toString, (currentTaxYear + 1).toString)
+                        <span class="bold body-text" id="cy-residency-status">@Messages(currentYearResidencyStatus)</span></p>
+                    @if(nextYearResidencyStatus.nonEmpty) {
+                    <p role="text">@Messages("tax.year.period", (currentTaxYear + 1).toString, (currentTaxYear + 2).toString)
+                        <span class="bold body-text" id="ny-residency-status">@Messages(nextYearResidencyStatus.get)</span></p>
+                    }
+            </div>
 
             <h2 class="heading-medium" id="sub-header">@Messages("match.found.what.happens.next")</h2>
 
-            @if(nextYearResidencyStatus.nonEmpty) {
-                <p id="bottom-content-cy-1">@Messages("match.found.bottom.current-year-and-next-year", (currentTaxYear + 1).toString, (currentTaxYear + 2).toString, currentTaxYear.toString, name)</p>
-            } else {
+            <p id="top-content">@Messages("match.found.top")</p>
+
+
+            @if(!nextYearResidencyStatus.nonEmpty) {
                 <p id="bottom-content-cy">@Messages("match.found.bottom.current-year.bottom", name, (currentTaxYear + 1).toString, (currentTaxYear + 2).toString)</p>
             }
 
             <div class="grid-row">
-                <div class ="column-two-thirds ras-top-margin">
-                <a id="choose-something-else"
-                   class="button"
-                   href='@routes.SessionController.redirect("whatDoYouWantToDo",true)'
-                    data-journey-click='button - click:Residency status added CY@if(nextYearResidencyStatus.nonEmpty){ & CY + 1}:Choose something else to do'
-                >@Messages("choose.something.else")</a>
+                <div class ="column-two-thirds ras-top-margin-small">
+                    <div class="ras-bottom-margin">
+                        <a id="look-up-another-member-link" href='@routes.SessionController.redirect("member-name",true)' data-journey-click="link - click:Residency status added CY@if(nextYearResidencyStatus.nonEmpty){ & CY + 1}:Look up another member">@Messages("look.up.another.member")</a>
+                    </div>
+
+                    <a id="choose-something-else"
+                       class="button"
+                       href='@routes.SessionController.redirect("whatDoYouWantToDo",true)'
+                       data-journey-click='button - click:Residency status added CY@if(nextYearResidencyStatus.nonEmpty){ & CY + 1}:Choose something else to do'
+                    >@Messages("choose.something.else")</a>
                 </div>
             </div>
         </div>
