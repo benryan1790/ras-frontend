@@ -25,16 +25,16 @@ import play.api.http.HttpEntity
 import play.api.mvc.{Action, AnyContent}
 import play.api.{Configuration, Environment, Logger, Play}
 import uk.gov.hmrc.auth.core.AuthConnector
-import forms.WhatDoYouWantToDoForm.whatDoYouWantToDoForm
 import helpers.helpers.I18nHelper
-import models.WhatDoYouWantToDo
+import models.{FileSession, FileUploadStatus}
 import services.ShortLivedCache
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.time.TaxYearResolver
+import models.FileUploadStatus._
 
 import scala.concurrent.Future
 
-object WhatDoYouWantToDoController extends WhatDoYouWantToDoController {
+object ChooseAnOptionController extends ChooseAnOptionController {
   // $COVERAGE-OFF$Disabling highlighting by default until a workaround for https://issues.scala-lang.org/browse/SI-8596 is found
   val authConnector: AuthConnector = FrontendAuthConnector
   override val userDetailsConnector: UserDetailsConnector = UserDetailsConnector
@@ -44,7 +44,7 @@ object WhatDoYouWantToDoController extends WhatDoYouWantToDoController {
   // $COVERAGE-ON$
 }
 
-trait WhatDoYouWantToDoController extends RasController with PageFlowController with I18nHelper {
+trait ChooseAnOptionController extends RasController with PageFlowController with I18nHelper {
 
   val resultsFileConnector:ResidencyStatusAPIConnector
   implicit val context: RasContext = RasContextImpl
@@ -54,57 +54,44 @@ trait WhatDoYouWantToDoController extends RasController with PageFlowController 
     implicit request =>
       isAuthorised.flatMap {
         case Right(userId) =>
-          Future.successful(Ok(views.html.what_do_you_want_to_do(whatDoYouWantToDoForm)))
+          shortLivedCache.fetchFileSession(userId).flatMap { fileSession =>
+            shortLivedCache.determineFileStatus(userId).flatMap {
+              fileStatus =>
+                Logger.info(s"[ChooseAnOptionController][get] determine file status returned $fileStatus")
+                Future.successful(Ok(views.html.choose_an_option(fileStatus, getHelpDate(fileStatus, fileSession))))
+            }
+          }
         case Left(resp) =>
-          Logger.error("[WhatDoYouWantToDoController][get] user not authorised")
+          Logger.error("[ChooseAnOptionController][get] user not authorised")
           resp
       }
   }
 
-  def post = Action.async {
-    implicit request =>
-      isAuthorised.flatMap {
-        case Right(userId) =>
-          whatDoYouWantToDoForm.bindFromRequest.fold(
-            formWithErrors => {
-              Logger.error("[WhatDoYouWantToDoController][post] No option selected")
-              Future.successful(BadRequest(views.html.what_do_you_want_to_do(formWithErrors)))
-            },
-            whatDoYouWantToDo =>
-              sessionService.cacheWhatDoYouWantToDo(whatDoYouWantToDo.userChoice.get).flatMap {
-                case Some(session) =>
-                  session.userChoice match {
-                    case WhatDoYouWantToDo.SINGLE => Future.successful(Redirect(routes.MemberNameController.get()))
-                    case WhatDoYouWantToDo.BULK =>
-                      shortLivedCache.fetchFileSession(userId).flatMap {
-                        case Some(fileSession) =>
-                          fileSession.resultsFile match {
-                            case Some(_) =>
-                              Future.successful(Redirect(routes.WhatDoYouWantToDoController.renderFileReadyPage()))
-                            case _ =>
-                              Future.successful(Redirect(routes.FileUploadController.get))
-                          }
-                        case _ =>
-                          Future.successful(Redirect(routes.FileUploadController.get))
-                      }
-                    case WhatDoYouWantToDo.RESULT =>
-                      shortLivedCache.failedProcessingUploadedFile(userId).flatMap {
-                        case true =>
-                          Future.successful(Redirect(routes.ErrorController.renderProblemGettingResultsPage()))
-                        case _ =>
-                          Future.successful(Redirect(routes.WhatDoYouWantToDoController.renderUploadResultsPage()))
-                      }
-                    case _ => Future.successful(Redirect(routes.ErrorController.renderGlobalErrorPage))
-                  }
-                case _ =>
-                  Logger.error("[WhatDoYouWantToDoController][post] failed to retrieve session")
-                  Future.successful(Redirect(routes.ErrorController.renderGlobalErrorPage))
-              }
-          )
-        case Left(resp) =>
-          Logger.error("[WhatDoYouWantToDoController][post] user mot authorised")
-          resp
-      }
+  private def getHelpDate(fileStatus: FileUploadStatus.Value, fileSession: Option[FileSession]): Option[String] = {
+    fileSession match {
+      case Some(fileSession) =>
+        fileStatus match {
+          case Ready => Some(formattedExpiryDate(fileSession.resultsFile.get.uploadDate.get)) // will always have a resultsfile and date if ready
+          case InProgress => Some(formattedUploadDate(fileSession.uploadTimeStamp.get)) // will always have an upload date time if in progress
+          case _ => None
+        }
+      case _ => None
+    }
+  }
+
+  private def formattedExpiryDate(timestamp: Long): String = {
+    val expiryDate = new DateTime(timestamp).plusDays(3)
+    s"${expiryDate.toString("EEEE d MMMM yyyy")} at ${expiryDate.toString("H:mma").toLowerCase()}"
+  }
+
+  private def formattedUploadDate(timestamp: Long): String = {
+    val uploadDate = new DateTime(timestamp)
+
+    val todayOrYesterday = uploadDate.toLocalDate().isEqual(DateTime.now.toLocalDate) match {
+      case true => Messages("today")
+      case _ => Messages("yesterday")
+    }
+    Messages("formatted.upload.timestamp", todayOrYesterday, uploadDate.toString("H:mm"))
   }
 
   def renderUploadResultsPage = Action.async {
@@ -118,32 +105,30 @@ trait WhatDoYouWantToDoController extends RasController with PageFlowController 
                   case Some(resultFile) =>
                     resultFile.uploadDate match {
                       case Some(timestamp) =>
-                        val expiryDate = new DateTime(timestamp).plusDays(3)
-                        val expiry = s"${expiryDate.toString("EEEE d MMMM yyyy")} at ${expiryDate.toString("H:mma").toLowerCase()}"
                         fileSession.userFile match {
                           case Some(callbackData) =>
                             val currentTaxYear = TaxYearResolver.currentTaxYear
                             val filename = ShortLivedCache.getDownloadFileName(fileSession)
-                            Ok(views.html.upload_result(callbackData.fileId, expiry, isBeforeApr6(timestamp), currentTaxYear, filename, !urBannerDismissed))
+                            Ok(views.html.upload_result(callbackData.fileId, formattedExpiryDate(timestamp), isBeforeApr6(timestamp), currentTaxYear, filename, !urBannerDismissed))
                           case _ =>
-                            Logger.error("[WhatDoYouWantToDoController][renderUploadResultsPage] failed to retrieve callback data")
+                            Logger.error("[ChooseAnOptionController][renderUploadResultsPage] failed to retrieve callback data")
                             Redirect(routes.ErrorController.renderGlobalErrorPage)
                         }
                       case _ =>
-                        Logger.error("[WhatDoYouWantToDoController][renderUploadResultsPage] failed to retrieve upload timestamp")
+                        Logger.error("[ChooseAnOptionController][renderUploadResultsPage] failed to retrieve upload timestamp")
                         Redirect(routes.ErrorController.renderGlobalErrorPage)
                     }
                   case _ =>
-                    Logger.info("[WhatDoYouWantToDoController][renderUploadResultsPage] file upload in progress")
-                    Redirect(routes.WhatDoYouWantToDoController.renderNoResultsAvailableYetPage)
+                    Logger.info("[ChooseAnOptionController][renderUploadResultsPage] file upload in progress")
+                    Redirect(routes.ChooseAnOptionController.renderNoResultsAvailableYetPage)
                 }
               case _ =>
-                Logger.info("[WhatDoYouWantToDoController][renderUploadResultsPage] no results available")
-                Redirect(routes.WhatDoYouWantToDoController.renderNoResultAvailablePage)
+                Logger.info("[ChooseAnOptionController][renderUploadResultsPage] no results available")
+                Redirect(routes.ChooseAnOptionController.renderNoResultAvailablePage)
             }
           }
         case Left(resp) =>
-          Logger.error("[WhatDoYouWantToDoController][renderUploadResultsPage] user not authorised")
+          Logger.error("[ChooseAnOptionController][renderUploadResultsPage] user not authorised")
           resp
       }
   }
@@ -152,10 +137,10 @@ trait WhatDoYouWantToDoController extends RasController with PageFlowController 
     implicit request =>
       isAuthorised.flatMap {
         case Right(_) =>
-          Logger.info("[WhatDoYouWantToDoController][renderNotResultAvailablePage] rendering no result available page")
+          Logger.info("[ChooseAnOptionController][renderNotResultAvailablePage] rendering no result available page")
           Future.successful(Ok(views.html.no_results_available()))
         case Left(resp) =>
-          Logger.error("[WhatDoYouWantToDoController][renderNotResultAvailablePage] user not authorised")
+          Logger.error("[ChooseAnOptionController][renderNotResultAvailablePage] user not authorised")
           resp
       }
   }
@@ -164,10 +149,10 @@ trait WhatDoYouWantToDoController extends RasController with PageFlowController 
     implicit request =>
       isAuthorised.flatMap {
         case Right(_) =>
-          Logger.info("[WhatDoYouWantToDoController][renderNotResultAvailableYetPage] rendering results not available page")
+          Logger.info("[ChooseAnOptionController][renderNotResultAvailableYetPage] rendering results not available page")
           Future.successful(Ok(views.html.results_not_available_yet()))
         case Left(resp) =>
-          Logger.error("[WhatDoYouWantToDoController][renderNotResultAvailableYetPage] user not authorised")
+          Logger.error("[ChooseAnOptionController][renderNotResultAvailableYetPage] user not authorised")
           resp
       }
   }
@@ -182,15 +167,15 @@ trait WhatDoYouWantToDoController extends RasController with PageFlowController 
                 case Some(resultFile) =>
                   Future.successful(Ok(views.html.file_ready()))
                 case _ =>
-                  Logger.error("[WhatDoYouWantToDoController][renderFileReadyPage] session has no result file")
+                  Logger.error("[ChooseAnOptionController][renderFileReadyPage] session has no result file")
                   Future.successful(Redirect(routes.ErrorController.renderGlobalErrorPage))
               }
             case _ =>
-              Logger.error("[WhatDoYouWantToDoController][renderFileReadyPage] failed to retrieve session")
+              Logger.error("[ChooseAnOptionController][renderFileReadyPage] failed to retrieve session")
               Future.successful(Redirect(routes.ErrorController.renderGlobalErrorPage))
           }
         case Left(resp) =>
-          Logger.error("[WhatDoYouWantToDoController][renderFileReadyPage] user not authorised")
+          Logger.error("[ChooseAnOptionController][renderFileReadyPage] user not authorised")
           resp
       }
   }
@@ -208,19 +193,19 @@ trait WhatDoYouWantToDoController extends RasController with PageFlowController 
                       shortLivedCache.removeFileSessionFromCache(userId)
                       getFile(fileName, userId, shortLivedCache.getDownloadFileName(fileSession))
                     case _ =>
-                      Logger.error("[WhatDoYouWantToDoController][getResultsFile] filename empty")
+                      Logger.error("[ChooseAnOptionController][getResultsFile] filename empty")
                       Future.successful(Redirect(routes.ErrorController.fileNotAvailable))
                   }
                 case _ =>
-                  Logger.error("[WhatDoYouWantToDoController][getResultsFile] no result file found")
+                  Logger.error("[ChooseAnOptionController][getResultsFile] no result file found")
                   Future.successful(Redirect(routes.ErrorController.fileNotAvailable))
               }
             case _ =>
-              Logger.error("[WhatDoYouWantToDoController][getResultsFile] no file session for User Id")
+              Logger.error("[ChooseAnOptionController][getResultsFile] no file session for User Id")
               Future.successful(Redirect(routes.ErrorController.fileNotAvailable))
           }
         case Left(resp) =>
-          Logger.error("[WhatDoYouWantToDoController][getResultsFile] user not authorised")
+          Logger.error("[ChooseAnOptionController][getResultsFile] user not authorised")
           resp
       }
   }

@@ -3,7 +3,7 @@
 unauthorised.error.page.title = There is a problem - Look up residency status for relief at source - GOV.UK
 file.upload.page.title = Upload a file - Look up residency status for relief at source - GOV.UK
 file.upload.successful.page.title = Your file has been uploaded - Look up residency status for relief at source - GOV.UK
-whatDoYouWantToDo.page.title = What do you want to do? - Look up residency status for relief at source - GOV.UK
+chooseAnOption.page.title = Choose an option to get a residency status - Look up residency status for relief at source - GOV.UK
 upload.result.page.title = The residency status has been added - Look up residency status for relief at source - GOV.UK
 cannot.upload.another.file.page.title = You cannot upload another file at the moment - Look up residency status for relief at source - GOV.UK
 member.name.page.title = What is the member’s name? - Look up residency status for relief at source - GOV.UK
@@ -21,7 +21,7 @@ problem.getting.results.title = There has been a problem getting the results - L
 
 ######  HEADERS ####################################################################################
 
-whatDoYouWantToDo.page.header = What do you want to do?
+chooseAnOption.page.header = Choose an option to get a residency status
 upload.result.page.header = Download your CSV results
 member.name.page.header = What is the member’s name?
 member.nino.page.header = What is {0}’s National Insurance number?
@@ -57,6 +57,8 @@ results.not.available.yet.sub-header1 = The results are still being added to the
 results.not.available.yet.sub-header2 = It can take up to 24 hours for the results to be added from when you uploaded the file.
 file.not.available.sub-header = You can {0}.
 file.ready.sub-header = Download your file
+single.member.subheading = Single member
+multiple.members.subheading = Multiple members
 
 ###### ERRORS ######################################################################################
 
@@ -204,3 +206,24 @@ ras.timeoutDialog.minutes= minutes
 ras.timeoutDialog.minute= minute
 ras.timeoutDialog.button= Stay signed in
 ras.timeoutDialog.p1 = For security reasons, you will be signed out of this service in:
+
+###### WDYWTDP ######################################################################################
+
+enter.members.details = Enter a member’s details
+upload.file = Upload a file
+download.results = Download your results
+file.ready = FILE READY
+result.timescale = Your results are available to download until {0}.
+problem.getting.result = There has been a problem getting your results.
+file.problem = FILE PROBLEM
+file.problem.paragraph = You should {0}. If this problem continues, check the file you are trying to upload. You can also try to create a new file and then upload that new copy.
+upload.file.again = try uploading your file again
+file.processing = PROCESSING
+file.upload.time = File uploaded {0}.
+file.size.info = Files less than 1 MB should be ready in a few minutes. If your file is larger or if the service is busy it can take up to 24 hours.
+processing.file = You cannot upload another file while this one is processing.
+today = today
+yesterday = yesterday
+formatted.upload.timestamp = {0} at {1}
+
+

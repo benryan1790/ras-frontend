@@ -1,0 +1,95 @@
+@*
+ * Copyright 2018 HM Revenue & Customs
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ *@
+
+@(fileStatus: FileUploadStatus.Value, formattedDate: Option[String])(implicit request: Request[_], context: config.RasContext, messages: Messages)
+
+@import uk.gov.hmrc.play.views.html.helpers._
+@import views.html.helpers._
+@import models.FileUploadStatus._
+
+@ras_main(title = Messages("chooseAnOption.page.title")) {
+
+<div class="grid-row">
+    <div class="column-two-thirds column-minimum">
+        <header class="page-header">
+            <h1 class="heading-xlarge" aria-hidden="true">@Messages("chooseAnOption.page.header")</h1>
+        </header>
+
+        <ul class="task-list">
+            <li>
+                <h2 class="task-list-section">@Messages("single.member.subheading")</h2>
+                    <ul class="task-list-items no-margin">
+                        <li class="task-list-item">
+                            <a class="task-name" id="single-member-link" href="@routes.MemberNameController.get()"  data-journey-click="link - click:Choose option to get residency status:Enter a members details">@Messages("enter.members.details")</a>
+                        </li>
+                    </ul>
+            </li>
+            <li>
+                <h2 class="task-list-section">@Messages("multiple.members.subheading")</h2>
+                    <ul class="task-list-items no-margin">
+
+                        @if(fileStatus==NoFileSession){
+                            <li class="task-list-item">
+                                <a class="task-name" id="upload-link" href="@routes.FileUploadController.get()" data-journey-click="link - click:Choose option to get residency status:Upload a file">@Messages("Upload a file")</a>
+                            </li>
+                         }
+
+                        @if(fileStatus==InProgress){
+                            <li class="task-list-item">
+                                <p class="paragraph-info no-margin">@Messages("file.upload.time", formattedDate.get)<strong class="task-completed" id="file-processing">@Messages("file.processing")</strong></p>
+                            </li>
+                            <li class="task-list-item">
+                                <p class="paragraph-info small-margin-top">@Messages("file.size.info")</p>
+                                <p class="paragraph-info no-bottom-margin">@Messages("processing.file")</p>
+                            </li>
+                        }
+
+                        @if(fileStatus==Ready){
+                            <li class="task-list-item">
+                                <a class="task-name" id="download-result-link" href="@routes.ChooseAnOptionController.renderUploadResultsPage" data-journey-click="link - click:Choose option to get residency status:Download your results">@Messages("download.results")</a>
+                                <strong class="task-completed" id="download-result">@Messages("file.ready")</strong>
+                            </li>
+                            <li class="task-list-item">
+                                <p class="paragraph-info no-bottom-margin small-margin-top">@Messages("result.timescale", formattedDate.get)</p>
+                            </li>
+                        }
+
+                        @if(fileStatus==UploadError || fileStatus==TimeExpiryError ){
+                            <li class="task-list-item">
+                                <p class="no-bottom-margin">
+                                    @Messages("problem.getting.result")
+                                    <strong class="task-completed" id="file-problem">@Messages("file.problem")</strong>
+                                </p>
+                            </li>
+                            <li class="task-list-item">
+                                <p class="paragraph-info no-bottom-margin small-margin-top">
+                                    @Html(
+                                    Messages(
+                                    "file.problem.paragraph",
+                                    "<a id='file-problem-link' class='file-problem-link' href='" + routes.FileUploadController.get() + "' data-journey-click='link - click:Choose option to get residency status:Upload a file'>" + Messages("upload.file.again") + "</a>"
+                                    )
+                                    )
+
+                                </p>
+                            </li>
+                        }
+                    </ul>
+            </li>
+        </ul>
+
+    </div>
+</div>
+}

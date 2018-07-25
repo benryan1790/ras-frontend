@@ -171,7 +171,7 @@ class FileUploadControllerSpec extends UnitSpec with WithFakeApplication with I1
       }
     }
 
-    "redirect to whatDoYouWantToDo page when back link is clicked" in {
+    "redirect to chooseAnOption page when back link is clicked" in {
       val result = TestFileUploadController.back.apply(FakeRequest())
       status(result) shouldBe SEE_OTHER
       redirectLocation(result).get should include("/")

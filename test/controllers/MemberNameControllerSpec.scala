@@ -216,7 +216,7 @@ class MemberNameControllerSpec extends UnitSpec with WithFakeApplication with I1
 
   "Member name controller back" should {
 
-    "return to whatDoYouWantToDo page when back link is clicked and edit mode is false" in {
+    "return to chooseAnOption page when back link is clicked and edit mode is false" in {
       val result = TestMemberNameController.back().apply(fakeRequest)
       status(result) shouldBe SEE_OTHER
       redirectLocation(result).get should include("/")

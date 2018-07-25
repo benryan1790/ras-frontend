@@ -14,21 +14,9 @@
  * limitations under the License.
  */
 
-package forms
+package models
 
-import helpers.helpers.I18nHelper
-import models.WhatDoYouWantToDo
-import play.api.data.Form
-import play.api.data.Forms._
-import play.api.i18n.Messages
-
-object WhatDoYouWantToDoForm extends I18nHelper{
-
-  val whatDoYouWantToDoForm = Form(
-    mapping(
-      "userChoice" ->
-        optional(text).verifying(Messages("select.an.answer"), {choice => choice.isDefined})
-    )(WhatDoYouWantToDo.apply)(WhatDoYouWantToDo.unapply)
-  )
+object FileUploadStatus extends Enumeration {
+  val NoFileSession, Ready, InProgress, UploadError, TimeExpiryError = Value
 
 }

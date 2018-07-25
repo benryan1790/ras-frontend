@@ -21,7 +21,7 @@
     <div class="grid-row">
         <div class="column-two-thirds">
             <div class="back-arrow">
-                <a class="link-back" id="back" href="@routes.WhatDoYouWantToDoController.get" data-journey-click="navigation - link:File not available:Back">@Messages("back")</a>
+                <a class="link-back" id="back" href="@routes.ChooseAnOptionController.get" data-journey-click="navigation - link:File not available:Back">@Messages("back")</a>
             </div>
 
             <div class="row">
@@ -32,7 +32,7 @@
                 <p id="sub-header">
                     @Html(Messages(
                         "file.not.available.sub-header",
-                        "<a id='sub-header-link' href='" + routes.WhatDoYouWantToDoController.get + "' data-journey-click='link - click:File not available:Choose something else to do'>" + Messages("file.not.available.link") + "</a>"
+                        "<a id='sub-header-link' href='" + routes.ChooseAnOptionController.get + "' data-journey-click='link - click:File not available:Choose something else to do'>" + Messages("file.not.available.link") + "</a>"
                     ))
                 </p>
             </div>

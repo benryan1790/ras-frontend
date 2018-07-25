@@ -23,6 +23,7 @@ import play.api.Logger
 import play.api.mvc.Request
 import uk.gov.hmrc.http.{HeaderCarrier, HttpResponse}
 import uk.gov.hmrc.http.cache.client.ShortLivedHttpCaching
+import models.FileUploadStatus._
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
@@ -49,7 +50,7 @@ trait SessionService extends SessionCacheWiring {
     sessionCache.fetchAndGetEntry[RasSession](RAS_SESSION_KEY)
   }
 
-  def cacheWhatDoYouWantToDo(value: String)(implicit hc: HeaderCarrier) = cache(CacheKeys.UserChoice, Some(value))
+  def cacheChooseAnOption(value: String)(implicit hc: HeaderCarrier) = cache(CacheKeys.UserChoice, Some(value))
   def cacheName(value: MemberName)(implicit hc: HeaderCarrier) = cache(CacheKeys.Name, Some(value))
   def cacheNino(value: MemberNino)(implicit hc: HeaderCarrier) = cache(CacheKeys.Nino, Some(value))
   def cacheDob(value: MemberDateOfBirth)(implicit hc: HeaderCarrier) = cache(CacheKeys.Dob, Some(value))
@@ -188,6 +189,25 @@ trait ShortLivedCache  {
       case ex: Throwable =>
         Logger.error(s"unable to fetch FileSession from cache to check isFileInProgress => ${userId} , Exception is ${ex.getMessage}")
         false
+    }
+  }
+
+  def determineFileStatus(userId: String)(implicit hc: HeaderCarrier): Future[FileUploadStatus.Value] = {
+    fetchFileSession(userId).flatMap {
+      case Some(fileSession) =>
+        fileSession.resultsFile match {
+          case Some(resultFile) => Future.successful(Ready)
+          case _ => isFileInProgress(userId).flatMap {
+            case true =>
+              failedProcessingUploadedFile(userId).flatMap {
+                case true => Future.successful(UploadError)
+                case _ => Future.successful(InProgress)
+              }
+
+            case _ => Future.successful(TimeExpiryError)
+          }
+        }
+      case _ => Future.successful(NoFileSession)
     }
   }
   

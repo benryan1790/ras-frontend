@@ -40,7 +40,7 @@ class PageFlowControllerSpec extends UnitSpec with WithFakeApplication with I18n
 
   "PageFlowController" should {
 
-    "redirect to what do you want to do page" when {
+    "redirect to choose an option page" when {
       "on member name page and edit is false" in {
         val result = TestPageFlowController.previousPage("MemberNameController")
         status(result) shouldBe SEE_OTHER

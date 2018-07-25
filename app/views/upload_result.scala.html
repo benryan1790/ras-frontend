@@ -24,7 +24,7 @@
       <div class="column-two-thirds">
           <div class="back-arrow">
               <a id="back" class="link-back"
-                 href="@routes.WhatDoYouWantToDoController.get"
+                 href="@routes.ChooseAnOptionController.get"
                  data-journey-click="navigation - link:Residency status upload added @year:Back">
                   @Messages("back")
               </a>
@@ -46,7 +46,7 @@
                     <div class="attachment-details">
                         <p>
                             <a id="result-link"
-                               href="@routes.WhatDoYouWantToDoController.getResultsFile(fileId)"
+                               href="@routes.ChooseAnOptionController.getResultsFile(fileId)"
                                data-journey-click="link - click:Residency status upload added @year:ResidencyStatusResults @year CSV">
                                 @Messages("residency.status.result", filename)
                             </a>
@@ -73,7 +73,7 @@
 <div class="continue-div">
   <a id="choose-something-else"
      class="button"
-     href="@routes.WhatDoYouWantToDoController.get"
+     href="@routes.ChooseAnOptionController.get"
      data-journey-click="button - click:Residency status upload added @year:Choose something else to do">
       @Messages("choose.something.else")
   </a>
