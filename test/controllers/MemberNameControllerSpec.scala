@@ -59,8 +59,7 @@ class MemberNameControllerSpec extends UnitSpec with WithFakeApplication with I1
   val memberName = MemberName("Jackie","Chan")
   val memberNino = MemberNino("AB123456C")
   val memberDob = MemberDateOfBirth(RasDate(Some("12"),Some("12"),Some("2012")))
-  val userChoice = ""
-  val rasSession = RasSession(userChoice, memberName, memberNino, memberDob, ResidencyStatusResult("",None,"","","","",""), None)
+  val rasSession = RasSession(memberName, memberNino, memberDob, ResidencyStatusResult("",None,"","","","",""), None)
   val postData = Json.obj("firstName" -> "Jim", "lastName" -> "McGill")
 
   val SCOTTISH = "scotResident"
@@ -176,7 +175,7 @@ class MemberNameControllerSpec extends UnitSpec with WithFakeApplication with I1
     }
 
     "redirect to nino page when name cached and edit mode is false" in {
-      val session = RasSession(userChoice, memberName, MemberNino(""), MemberDateOfBirth(RasDate(None,None,None)), ResidencyStatusResult("",None,"","","","",""),None)
+      val session = RasSession(memberName, MemberNino(""), MemberDateOfBirth(RasDate(None,None,None)), ResidencyStatusResult("",None,"","","","",""),None)
       when(mockSessionService.cacheName(Matchers.any())(Matchers.any())).thenReturn(Future.successful(Some(session)))
       val result = TestMemberNameController.post().apply(fakeRequest.withJsonBody(Json.toJson(postData)))
       status(result) shouldBe 303

@@ -41,6 +41,7 @@ trait ResidencyStatusAPIConnector extends ServicesConfig {
 
   lazy val serviceUrl = baseUrl("relief-at-source")
   lazy val residencyStatusUrl = ApplicationConfig.rasApiResidencyStatusEndpoint
+  lazy val fileDeletionUrl = ApplicationConfig.fileDeletionUrl
   lazy val residencyStatusVersion = ApplicationConfig.rasApiVersion
 
   def getResidencyStatus(memberDetails: MemberDetails)(implicit hc: HeaderCarrier): Future[ResidencyStatus] = {
@@ -58,11 +59,16 @@ trait ResidencyStatusAPIConnector extends ServicesConfig {
     implicit val system = ActorSystem()
     implicit val materializer = ActorMaterializer()
 
-    Logger.info(s"Get results file  with URI for $fileName by userId ($userId)")
+    Logger.info(s"Get results file with URI for $fileName by userId ($userId)")
     wsHttp.buildRequestWithStream(s"$serviceUrl/ras-api/file/getFile/$fileName").map { res =>
       Some(res.body.runWith(StreamConverters.asInputStream()))
     }
 
+  }
+
+  def deleteFile(fileName: String, userId: String)(implicit hc: HeaderCarrier): Future[HttpResponse] = {
+
+    wsHttp.DELETE[HttpResponse](s"$serviceUrl$fileDeletionUrl/$fileName/$userId")(implicitly, hc, MdcLoggingExecutionContext.fromLoggingDetails)
   }
 
   private val responseHandler = new HttpReads[ResidencyStatus] {

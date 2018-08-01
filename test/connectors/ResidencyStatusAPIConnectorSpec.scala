@@ -29,7 +29,7 @@ import org.mockito.Mockito.when
 import org.scalatest.mock.MockitoSugar
 import org.scalatestplus.play.OneAppPerSuite
 import play.api.libs.ws.{DefaultWSResponseHeaders, StreamedResponse}
-import uk.gov.hmrc.http.{HeaderCarrier, HttpPost}
+import uk.gov.hmrc.http.{HeaderCarrier, HttpPost, HttpResponse}
 import uk.gov.hmrc.play.config.ServicesConfig
 import uk.gov.hmrc.play.test.UnitSpec
 
@@ -101,4 +101,22 @@ class ResidencyStatusAPIConnectorSpec extends UnitSpec with OneAppPerSuite with 
     }
   }
 
+  "deleteFile" should {
+    "return a 200 when a file has been successfully deleted" in {
+
+      when(TestConnector.wsHttp.DELETE[HttpResponse](any())(any(), any(), any())).thenReturn(Future.successful(HttpResponse(200)))
+
+      val result = TestConnector.deleteFile("file-name", "userId")
+
+      await(result).status shouldBe 200
+    }
+
+    "return a 500 when a file has not been deleted" in {
+      when(TestConnector.wsHttp.DELETE[HttpResponse](any())(any(), any(), any())).thenReturn(Future.successful(HttpResponse(500)))
+
+      val result = TestConnector.deleteFile("file-name", "userId")
+
+      await(result).status shouldBe 500
+    }
+  }
 }

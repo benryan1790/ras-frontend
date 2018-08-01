@@ -18,7 +18,6 @@ package controllers
 
 import config.FrontendAuthConnector
 import connectors.UserDetailsConnector
-import models.RasSession
 import play.api.{Configuration, Environment, Play}
 import play.api.mvc.Result
 import uk.gov.hmrc.auth.core.AuthConnector

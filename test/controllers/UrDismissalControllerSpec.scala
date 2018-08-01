@@ -54,7 +54,7 @@ class UrDismissalControllerSpec extends UnitSpec with MockitoSugar with WithFake
   private val enrolments = new Enrolments(Set(enrolment))
   val successfulRetrieval: Future[Enrolments] = Future.successful(enrolments)
 
-  val rasSession = RasSession("", MemberName("", ""), MemberNino(""), MemberDateOfBirth(RasDate(None, None, None)), ResidencyStatusResult("", None, "", "", "", "", ""))
+  val rasSession = RasSession(MemberName("", ""), MemberNino(""), MemberDateOfBirth(RasDate(None, None, None)), ResidencyStatusResult("", None, "", "", "", "", ""))
 
   object TestUrDismissalController extends UrDismissalController {
 

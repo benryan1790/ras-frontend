@@ -35,7 +35,7 @@ class PageFlowControllerSpec extends UnitSpec with WithFakeApplication with I18n
     override val env: Environment = Environment(Play.current.path, Play.current.classloader, Play.current.mode)
   }
 
-  val emptySession = RasSession("",MemberName("",""),MemberNino(""),
+  val emptySession = RasSession(MemberName("",""),MemberNino(""),
     MemberDateOfBirth(RasDate(None,None,None)),ResidencyStatusResult("",None,"","","","",""),None)
 
   "PageFlowController" should {

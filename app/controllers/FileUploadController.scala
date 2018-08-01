@@ -198,9 +198,21 @@ trait FileUploadController extends RasController with PageFlowController {
 
   def uploadInProgress = Action.async { implicit request =>
     isAuthorised.flatMap {
-      case Right(_) =>
-        Logger.info("[FileUploadController][uploadInProgress] calling cannot upload another file")
-        Future.successful(Ok(views.html.cannot_upload_another_file()))
+      case Right(userId) =>
+        shortLivedCache.fetchFileSession(userId).flatMap {
+          case Some(fileSession) =>
+            fileSession.resultsFile match {
+              case Some(_) =>
+                Logger.info("[FileUploadController][uploadInProgress] redirecting to file ready page")
+                Future.successful(Redirect(routes.ChooseAnOptionController.renderFileReadyPage()))
+              case _ =>
+                Logger.info("[FileUploadController][uploadInProgress] calling cannot upload another file")
+                Future.successful(Ok(views.html.cannot_upload_another_file()))
+            }
+          case _ =>
+            Logger.info("[FileUploadController][uploadInProgress] redirecting to global error")
+            Future.successful(Redirect(routes.ErrorController.renderGlobalErrorPage()))
+        }
       case Left(resp) =>
         Logger.error("[FileUploadController][uploadInProgress] user not authorised")
         resp

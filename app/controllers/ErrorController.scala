@@ -48,18 +48,6 @@ trait ErrorController extends RasController with I18nHelper {
       }
   }
 
-  def renderProblemGettingResultsPage = Action.async {
-    implicit request =>
-      isAuthorised.flatMap {
-        case Right(_) =>
-          Logger.info("[ErrorController][renderProblemGettingResultsPage] rendering problem getting results page")
-          Future.successful(InternalServerError(views.html.problem_getting_results()))
-        case Left(resp) =>
-          Logger.error("[ErrorController][renderProblemGettingResultsPage] user not authorised")
-          resp
-      }
-  }
-
   def renderProblemUploadingFilePage = Action.async {
     implicit request =>
       isAuthorised.flatMap {

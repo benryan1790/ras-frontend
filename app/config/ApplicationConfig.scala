@@ -32,6 +32,7 @@ trait ApplicationConfig {
   val betaFeedbackUnauthenticatedUrl: String
   val loginCallback:String
   val fileUploadCallBack: String
+  val fileDeletionUrl: String
   val hoursToWaitForReUpload :Int
   val rasApiResidencyStatusEndpoint: String
   val reportAProblemUrl: String
@@ -72,7 +73,7 @@ object ApplicationConfig extends ApplicationConfig with ServicesConfig {
   override lazy val loginCallback: String = configuration.getString("gg-urls.login-callback.url").getOrElse("/relief-at-source/")
   override lazy val fileUploadCallBack: String = configuration.getString("file-upload-ras-callback-url")
     .getOrElse(throw new Exception("Missing configuration key: file-upload-ras-callback-url"))
-
+  override lazy val fileDeletionUrl: String = configuration.getString("file-deletion-url").getOrElse("/ras-api/file/remove/")
   override lazy val rasApiResidencyStatusEndpoint: String = getString("residency-status-url")
 
   override lazy val urBannerEnabled: Boolean = configuration.getBoolean("ur-banner.enabled").getOrElse(false)

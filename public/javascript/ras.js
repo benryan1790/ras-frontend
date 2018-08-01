@@ -29,13 +29,6 @@ $(function() {
         return true;
     });
 
-    $('button[id=continue]').click(function() {
-        var label = $('input:radio[name=userChoice]:checked').val();
-        if (typeof label !== 'undefined') {
-            ga('send', 'event', 'button - click', 'What do you want to do', 'Continue - ' + label);
-        }
-    });
-
 });
 
 

@@ -36,7 +36,6 @@ GET         /no-residency-status-displayed                                      
 GET         /no-residency-status-displayed/back                                 controllers.ResultsController.back
 
 GET         /global-error                                                       controllers.ErrorController.renderGlobalErrorPage
-GET         /problem-getting-results                                            controllers.ErrorController.renderProblemGettingResultsPage
 GET         /file-upload-problem                                                controllers.ErrorController.renderProblemUploadingFilePage
 GET         /file-not-available                                                 controllers.ErrorController.fileNotAvailable
 GET         /not-authorised                                                     controllers.ErrorController.notAuthorised

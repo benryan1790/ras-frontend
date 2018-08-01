@@ -71,11 +71,6 @@ class ErrorControllerSpec extends UnitSpec with WithFakeApplication with Mockito
       status(result) shouldBe Status.INTERNAL_SERVER_ERROR
     }
 
-    "return error when problem getting results is called" in {
-      val result = TestErrorController.renderProblemGettingResultsPage(fakeRequest)
-      status(result) shouldBe Status.INTERNAL_SERVER_ERROR
-    }
-
     "return error when problem uploading file results is called" in {
       val result = TestErrorController.renderProblemUploadingFilePage(fakeRequest)
       status(result) shouldBe Status.INTERNAL_SERVER_ERROR
@@ -97,12 +92,6 @@ class ErrorControllerSpec extends UnitSpec with WithFakeApplication with Mockito
       charset(result) shouldBe Some("utf-8")
     }
 
-    "return HTML when upload error is called" in {
-      val result = TestErrorController.renderProblemGettingResultsPage(fakeRequest)
-      contentType(result) shouldBe Some("text/html")
-      charset(result) shouldBe Some("utf-8")
-    }
-
     "return HTML when problem uploading file is called" in {
       val result = TestErrorController.renderProblemUploadingFilePage(fakeRequest)
       contentType(result) shouldBe Some("text/html")
@@ -118,27 +107,6 @@ class ErrorControllerSpec extends UnitSpec with WithFakeApplication with Mockito
       doc.title shouldBe Messages("global.error.page.title")
       doc.getElementById("header").text shouldBe Messages("global.error.header")
       doc.getElementById("message").text shouldBe Messages("global.error.message")
-    }
-  }
-
-  "problem getting results page" should {
-
-    "contain correct title and header" in {
-      val result = TestErrorController.renderProblemGettingResultsPage(fakeRequest)
-      val doc = Jsoup.parse(contentAsString(result))
-      doc.title shouldBe Messages("problem.getting.results.title")
-      doc.getElementById("back").attr("href") should include("/")
-      doc.getElementById("header").text shouldBe Messages("problem.getting.results.header")
-      doc.getElementById("try-again").text shouldBe Messages("check.upload.file.again", Messages("file.formatted.correctly"))
-      doc.getElementById("choose-something-else").text shouldBe Messages("choose.something.else")
-    }
-
-    "contain correct ga events" in {
-      val result = TestErrorController.renderProblemGettingResultsPage(fakeRequest)
-      val doc = Jsoup.parse(contentAsString(result))
-      doc.getElementById("back").attr("data-journey-click") shouldBe "navigation - link:There has been a problem getting your results:Back"
-      doc.getElementById("choose-something-else").attr("data-journey-click") shouldBe "button - click:There has been a problem getting your results:Choose something else to do"
-      doc.getElementById("file-formatting").attr("data-journey-click") shouldBe "link - click:There has been a problem getting your results:Check file format"
     }
   }
 

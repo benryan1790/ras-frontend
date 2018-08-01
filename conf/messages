@@ -17,7 +17,6 @@ no.results.available.page.title = You have not uploaded a file - Look up residen
 results.not.available.yet.page.title = The results file is not available yet - Look up residency status for relief at source - GOV.UK
 file.not.available.page.title = This file is not available - Look up residency status for relief at source - GOV.UK
 file.ready.page.title = The last file you uploaded is ready - Look up residency status for relief at source - GOV.UK
-problem.getting.results.title = There has been a problem getting the results - Look up residency status for relief at source - GOV.UK
 
 ######  HEADERS ####################################################################################
 
@@ -39,7 +38,6 @@ results.not.available.yet.page.header = The results file is not available yet
 file.not.available.page.header = This file is not available
 unauthorised.page.header = There is a problem
 file.ready.page.header = The last file you uploaded is ready
-problem.getting.results.header = There has been a problem getting the results
 
 ###### SUB-HEADERS #################################################################################
 
@@ -114,8 +112,6 @@ expiry.date.message = If you do not open this file, It will be deleted on {0}.
 deletion.message = You should save a copy of it. The file is deleted from the service when you open it.
 try.uploading.again = Try again and upload your file
 check.file = If this problem continues, you should check the file you are trying to upload. You can also try to create a new file and then upload that new copy.
-check.upload.file.again = Check that your {0} and then try uploading again.
-file.formatted.correctly = file is formatted correctly
 upload.file.again = You should upload your file again.
 return.to.upload = Return to upload a file
 first.name = first name

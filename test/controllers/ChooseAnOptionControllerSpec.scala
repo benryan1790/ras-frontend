@@ -27,8 +27,8 @@ import models.FileUploadStatus._
 import org.joda.time.DateTime
 import org.jsoup.Jsoup
 import org.jsoup.nodes.Document
-import org.mockito.Matchers.any
-import org.mockito.Mockito.when
+import org.mockito.Matchers._
+import org.mockito.Mockito._
 import org.scalatest.mockito.MockitoSugar
 import play.api.mvc.Result
 import play.api.test.Helpers.{OK, contentAsString, _}
@@ -68,8 +68,7 @@ class ChooseAnOptionControllerSpec extends UnitSpec with MockitoSugar with I18nH
   val mockExpiryTimeStamp = new DateTime().minusDays(7).getMillis
   val mockResultsFileMetadata = ResultsFileMetaData("",Some("testFile.csv"),Some(mockUploadTimeStamp),1,1L)
   val fileSession = FileSession(Some(CallbackData("","someFileId","",None)),Some(mockResultsFileMetadata),"1234",Some(DateTime.now().getMillis()),None)
-  val userChoice = ""
-  val rasSession = RasSession(userChoice ,MemberName("",""),MemberNino(""),MemberDateOfBirth(RasDate(None,None,None)),ResidencyStatusResult("",None,"","","","",""))
+  val rasSession = RasSession(MemberName("",""),MemberNino(""),MemberDateOfBirth(RasDate(None,None,None)),ResidencyStatusResult("",None,"","","","",""))
 
   val row1 = "John,Smith,AB123456C,1990-02-21"
   val inputStream = new ByteArrayInputStream(row1.getBytes)
@@ -402,6 +401,7 @@ class ChooseAnOptionControllerSpec extends UnitSpec with MockitoSugar with I18nH
       val result = await(TestChooseAnOptionController.getResultsFile("testFile.csv").apply(
         FakeRequest(Helpers.GET, "/chooseAnOption/results/:testFile.csv")))
       contentAsString(result) shouldBe row1
+//      verify(mockRasConnector).deleteFile(any(), any())(any())
     }
 
     "not be able to download a file containing the results when file name is incorrect" in {
@@ -451,19 +451,17 @@ class ChooseAnOptionControllerSpec extends UnitSpec with MockitoSugar with I18nH
       status(result) shouldBe OK
     }
 
-    "return global error page" when {
-      "there is no file session" in {
-        when(mockShortLivedCache.fetchFileSession(any())(any()))thenReturn(Future.successful(None))
-        val result = await(TestChooseAnOptionController.renderFileReadyPage(fakeRequest))
-        redirectLocation(result).get should include("/global-error")
-      }
+    "return global error page when there is no file session" in {
+      when(mockShortLivedCache.fetchFileSession(any())(any()))thenReturn(Future.successful(None))
+      val result = await(TestChooseAnOptionController.renderFileReadyPage(fakeRequest))
+      redirectLocation(result).get should include("/global-error")
+    }
 
-      "there is a file session but there is no result file ready" in {
-        val fileSession = FileSession(None,None,"1234",None,None)
-        when(mockShortLivedCache.fetchFileSession(any())(any()))thenReturn(Future.successful(Some(fileSession)))
-        val result = await(TestChooseAnOptionController.renderFileReadyPage(fakeRequest))
-        redirectLocation(result).get should include("/global-error")
-      }
+    "redirect to cannot upload another file there is no result file ready" in {
+      val fileSession = FileSession(None, None, "1234", None, None)
+      when(mockShortLivedCache.fetchFileSession(any())(any())) thenReturn (Future.successful(Some(fileSession)))
+      val result = await(TestChooseAnOptionController.renderFileReadyPage(fakeRequest))
+      redirectLocation(result).get should include("/cannot-upload-another-file")
     }
 
     "contain the correct page title" in {
@@ -507,10 +505,24 @@ class ChooseAnOptionControllerSpec extends UnitSpec with MockitoSugar with I18nH
   "renderResultsNotAvailableYetPage" should {
     "return ok when called" in {
       val fileSession = FileSession(None,None,"1234",None,None)
-      when(mockShortLivedCache.fetchFileSession(any())(any()))thenReturn(Future.successful(Some(fileSession)))
+      when(mockShortLivedCache.fetchFileSession(any())(any())).thenReturn(Future.successful(Some(fileSession)))
       val result = await(TestChooseAnOptionController.renderUploadResultsPage(fakeRequest))
       status(result) shouldBe SEE_OTHER
       redirectLocation(result).get should include("/results-not-available")
+    }
+
+    "return error when there is a result file in file session" in {
+      when(mockShortLivedCache.fetchFileSession(any())(any())).thenReturn(Future.successful(Some(fileSession)))
+      val result = await(TestChooseAnOptionController.renderNoResultsAvailableYetPage(fakeRequest))
+      status(result) shouldBe SEE_OTHER
+      redirectLocation(result).get should include("/residency-status-added")
+    }
+
+    "return error when there is no file session" in {
+      when(mockShortLivedCache.fetchFileSession(any())(any())).thenReturn(Future.successful(None))
+      val result = await(TestChooseAnOptionController.renderNoResultsAvailableYetPage(fakeRequest))
+      status(result) shouldBe SEE_OTHER
+      redirectLocation(result).get should include("/no-results-available")
     }
 
     "contain the correct page title" in {
@@ -578,6 +590,21 @@ class ChooseAnOptionControllerSpec extends UnitSpec with MockitoSugar with I18nH
       val result = await(TestChooseAnOptionController.renderUploadResultsPage(fakeRequest))
       status(result) shouldBe SEE_OTHER
       redirectLocation(result).get should include("/no-results-available")
+    }
+
+    "redirect to results-not-avilable when there is a file session with a file in progress" in {
+      val session = fileSession.copy(resultsFile = None)
+      when(mockShortLivedCache.fetchFileSession(any())(any()))thenReturn(Future.successful(Some(session)))
+      val result = await(TestChooseAnOptionController.renderNoResultAvailablePage(fakeRequest))
+      status(result) shouldBe SEE_OTHER
+      redirectLocation(result).get should include("/results-not-available")
+    }
+
+    "redirect to results page when there is a file session with a file ready" in {
+      when(mockShortLivedCache.fetchFileSession(any())(any()))thenReturn(Future.successful(Some(fileSession)))
+      val result = await(TestChooseAnOptionController.renderNoResultAvailablePage(fakeRequest))
+      status(result) shouldBe SEE_OTHER
+      redirectLocation(result).get should include("/residency-status-added")
     }
 
     "contain the correct page title" in {

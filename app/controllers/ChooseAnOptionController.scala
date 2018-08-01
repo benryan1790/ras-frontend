@@ -22,7 +22,7 @@ import config.{FrontendAuthConnector, RasContext, RasContextImpl}
 import connectors.{ResidencyStatusAPIConnector, UserDetailsConnector}
 import org.joda.time.DateTime
 import play.api.http.HttpEntity
-import play.api.mvc.{Action, AnyContent}
+import play.api.mvc._
 import play.api.{Configuration, Environment, Logger, Play}
 import uk.gov.hmrc.auth.core.AuthConnector
 import helpers.helpers.I18nHelper
@@ -33,6 +33,7 @@ import uk.gov.hmrc.time.TaxYearResolver
 import models.FileUploadStatus._
 
 import scala.concurrent.Future
+import scala.util.{Failure, Success}
 
 object ChooseAnOptionController extends ChooseAnOptionController {
   // $COVERAGE-OFF$Disabling highlighting by default until a workaround for https://issues.scala-lang.org/browse/SI-8596 is found
@@ -46,7 +47,7 @@ object ChooseAnOptionController extends ChooseAnOptionController {
 
 trait ChooseAnOptionController extends RasController with PageFlowController with I18nHelper {
 
-  val resultsFileConnector:ResidencyStatusAPIConnector
+  val resultsFileConnector: ResidencyStatusAPIConnector
   implicit val context: RasContext = RasContextImpl
   private val _contentType =   "application/csv"
 
@@ -136,9 +137,21 @@ trait ChooseAnOptionController extends RasController with PageFlowController wit
   def renderNoResultAvailablePage = Action.async {
     implicit request =>
       isAuthorised.flatMap {
-        case Right(_) =>
-          Logger.info("[ChooseAnOptionController][renderNotResultAvailablePage] rendering no result available page")
-          Future.successful(Ok(views.html.no_results_available()))
+        case Right(userId) =>
+          shortLivedCache.fetchFileSession(userId).flatMap {
+            case Some(fileSession) =>
+              fileSession.resultsFile match {
+                case Some(resultFile) =>
+                  Logger.info("[ChooseAnOptionController][renderNotResultAvailablePage] there is a file ready, rendering results page")
+                  Future.successful(Redirect(routes.ChooseAnOptionController.renderUploadResultsPage()))
+                case _ =>
+                  Logger.info("[ChooseAnOptionController][renderNotResultAvailablePage] there is a file in progress, rendering results-not-available page")
+                  Future.successful(Redirect(routes.ChooseAnOptionController.renderNoResultsAvailableYetPage()))
+              }
+            case _ =>
+              Logger.info("[ChooseAnOptionController][renderNotResultAvailablePage] rendering no result available page")
+              Future.successful(Ok(views.html.no_results_available()))
+          }
         case Left(resp) =>
           Logger.error("[ChooseAnOptionController][renderNotResultAvailablePage] user not authorised")
           resp
@@ -148,9 +161,21 @@ trait ChooseAnOptionController extends RasController with PageFlowController wit
   def renderNoResultsAvailableYetPage = Action.async {
     implicit request =>
       isAuthorised.flatMap {
-        case Right(_) =>
-          Logger.info("[ChooseAnOptionController][renderNotResultAvailableYetPage] rendering results not available page")
-          Future.successful(Ok(views.html.results_not_available_yet()))
+        case Right(userId) =>
+          shortLivedCache.fetchFileSession(userId).flatMap {
+            case Some(fileSession) =>
+              fileSession.resultsFile match {
+                case Some(_) =>
+                  Logger.info("[ChooseAnOptionController][renderNotResultAvailableYetPage] redirecting to results page")
+                  Future.successful(Redirect(routes.ChooseAnOptionController.renderUploadResultsPage()))
+                case _ =>
+                  Logger.info("[ChooseAnOptionController][renderNotResultAvailableYetPage] rendering results not available page")
+                  Future.successful(Ok(views.html.results_not_available_yet()))
+              }
+            case _ =>
+              Logger.info("[ChooseAnOptionController][renderNotResultAvailableYetPage] redirecting to results not available")
+              Future.successful(Redirect(routes.ChooseAnOptionController.renderNoResultAvailablePage()))
+          }
         case Left(resp) =>
           Logger.error("[ChooseAnOptionController][renderNotResultAvailableYetPage] user not authorised")
           resp
@@ -168,7 +193,7 @@ trait ChooseAnOptionController extends RasController with PageFlowController wit
                   Future.successful(Ok(views.html.file_ready()))
                 case _ =>
                   Logger.error("[ChooseAnOptionController][renderFileReadyPage] session has no result file")
-                  Future.successful(Redirect(routes.ErrorController.renderGlobalErrorPage))
+                  Future.successful(Redirect(routes.FileUploadController.uploadInProgress()))
               }
             case _ =>
               Logger.error("[ChooseAnOptionController][renderFileReadyPage] failed to retrieve session")
@@ -213,6 +238,13 @@ trait ChooseAnOptionController extends RasController with PageFlowController wit
   private def getFile(fileName: String, userId: String, downloadFileName: String)(implicit hc: HeaderCarrier): Future[play.api.mvc.Result] = {
     resultsFileConnector.getFile(fileName, userId).map { response =>
       val dataContent: Source[ByteString, _] = StreamConverters.fromInputStream(() => response.get)
+        .watchTermination()((_, futDone) => futDone.onComplete {
+          case Success(_) =>
+            Logger.info(s"File with name $fileName has started to delete")
+            resultsFileConnector.deleteFile(fileName, userId)
+          case Failure(t) =>
+            Logger.warn(s"File with name $fileName was not deleted")
+        })
 
       Ok.sendEntity(HttpEntity.Streamed(dataContent, None, Some(_contentType)))
         .withHeaders(CONTENT_DISPOSITION -> s"""attachment; filename="${downloadFileName}-results.csv"""",

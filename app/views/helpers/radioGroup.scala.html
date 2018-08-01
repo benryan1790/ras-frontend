@@ -49,14 +49,6 @@
             <span id="@(field.name)_label" class="form-label-bold">
                 @elements.args.get('_legend)
             </span>}
-            @if(elements.args.get('_h1).isDefined) {
-            <h1 class="heading-xlarge">
-                @Messages("chooseAnOption.page.header")
-            </h1>}
-            @if(errors.nonEmpty) {
-            <div class="form-group-error common-error">
-                @commonHelper(field,errors)
-            </div>}
         </legend>
 
         <div class="ras-form-group form-group @fieldsetClass">
