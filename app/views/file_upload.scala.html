@@ -47,7 +47,7 @@
     }else{
         <div id="file-upload-with-error" class="form-group form-field--error">
     }
-            @form(action = routes.FileUploadController.post(), 'enctype -> "multipart/form-data", 'id -> "upload-form") {
+            @form(action = routes.FileUploadController.post(), 'enctype -> "multipart/form-data", 'id -> "upload-form", 'method -> "post") {
                 <label for="choose-file" id="upload-label">
                     <span class="form-label visually-hidden">Upload a file</span>
                     <span id="upload-error" class="common-error">@error</span>
